@@ -1,11 +1,11 @@
 const express = require("express");
 const app = express();
 
-app.get("/", (req, res) => {
-  res.send("Kayo backend live 🚀");
-});
+app.use(express.json()); // ⭐ very important
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log("Server running on port " + PORT);
+app.get("/", (req, res) => {
+  res.json({
+    status: "ok",
+    message: "Kayo backend live 🚀"
+  });
 });
