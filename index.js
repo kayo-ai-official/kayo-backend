@@ -1,22 +1,21 @@
-const express = require("express");
-const app = express();
-const OpenAI = require("openai");
+import express from "express";
+import OpenAI from "openai";
 
-const openai = new OpenAI({
+const app = express();
+app.use(express.json());
+
+// OpenAI client
+const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 });
 
-app.use(express.json()); // ⭐ very important
-
+// test route (health check)
 app.get("/", (req, res) => {
-  res.json({
-    status: "ok",
-    message: "Kayo backend live 🚀"
-  });
+  res.send("Kayo backend is running 🚀");
 });
 
-// AI RADIO / CHAT / SCRIPT
-app.post("/api/ai", async (req, res) => {
+// AI Chat API
+app.post("/api/chat", async (req, res) => {
   try {
     const { prompt } = req.body;
 
@@ -24,19 +23,29 @@ app.post("/api/ai", async (req, res) => {
       return res.status(400).json({ error: "Prompt missing" });
     }
 
-    const response = await openai.chat.completions.create({
+    const response = await client.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
-        { role: "system", content: "You are a friendly radio jockey." },
-        { role: "user", content: prompt }
+        {
+          role: "system",
+          content: "You are an AI radio host. Speak in friendly Hindi."
+        },
+        {
+          role: "user",
+          content: prompt
+        }
       ]
     });
 
     res.json({
-      text: response.choices[0].message.content
+      reply: response.choices[0].message.content
     });
 
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: "AI error" });
   }
 });
+
+// IMPORTANT for Vercel
+export default app;
